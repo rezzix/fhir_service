@@ -1,4 +1,4 @@
-package net.rezzix.dppclient;
+package net.rezzix.fhirclient;
 
 import ca.uhn.fhir.context.FhirContext;
 import org.hl7.fhir.r5.model.*;
