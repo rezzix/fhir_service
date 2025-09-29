@@ -28,11 +28,29 @@ repositories {
 	mavenCentral()
 }
 
+// Define HAPI FHIR version for consistency
+ext {
+    hapiFhirVersion = '8.4.0'
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "ca.uhn.hapi.fhir:hapi-fhir-structures-r5:8.4.0"
-    implementation "ca.uhn.hapi.fhir:hapi-fhir-base:8.4.0"
+	
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-base:${hapiFhirVersion}"
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-structures-r5:${hapiFhirVersion}"
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-validation:${hapiFhirVersion}"
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-validation-resources-r5:${hapiFhirVersion}"
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-server:${hapiFhirVersion}" // For server-side utilities
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-client:${hapiFhirVersion}" // Although a server, client is useful for parsing
+    
+    // HAPI FHIR requires a caching provider for the validation module
+    implementation "ca.uhn.hapi.fhir:hapi-fhir-caching-caffeine:${hapiFhirVersion}"
+
+    // Lombok for cleaner code
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    
     implementation "org.springframework.kafka:spring-kafka"
     
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

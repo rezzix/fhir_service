@@ -1,7 +1,11 @@
 package net.rezzix.fhirservice.controller;
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.validation.FhirValidator;
+import ca.uhn.fhir.validation.ValidationResult;
+import net.rezzix.fhirservice.exceptions.ValidationException;
 import net.rezzix.fhirservice.service.KafkaProducerService;
+import net.rezzix.fhirservice.service.ValidationService;
 
 import org.hl7.fhir.r5.model.*;
 import org.springframework.http.MediaType;
@@ -14,9 +18,12 @@ public class DeclarationController {
 
     private final FhirContext ctx = FhirContext.forR5();
     private final KafkaProducerService kafkaProducerService;
+    private final ValidationService validationService;
+    
 
-    public DeclarationController(KafkaProducerService kafkaProducerService) {
+    public DeclarationController(KafkaProducerService kafkaProducerService, ValidationService validationService) {
         this.kafkaProducerService = kafkaProducerService;
+        this.validationService = validationService;
     }
 
     @PostMapping(
@@ -32,6 +39,8 @@ public class DeclarationController {
             System.out.println("=== Received FHIR Bundle ===");
             System.out.println(pretty);
             System.out.println("=== End FHIR Bundle ===");
+            
+            validationService.validateBundle(bundle);
 
             for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
                 if (entry.getResource() instanceof Patient patient) {
