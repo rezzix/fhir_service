@@ -28,6 +28,16 @@ spring:
           type: JKS
         endpoint-identification-algorithm: https
 
+app:
+  kafka:
+    topic:
+      declarationssih: "declarationssih"
+  validation:
+    # Set to true to validate the bundle structure and profiles
+    bundle-enabled: true
+    # Set to true to validate terminology and coding systems (requires internet or local terminology server)
+    coding-enabled: true
+    
 # Logging levels (uncomment as needed)
 #logging:
 #  level:

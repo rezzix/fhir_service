@@ -4,6 +4,7 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
 import net.rezzix.fhirservice.exceptions.ValidationException;
+import net.rezzix.fhirservice.service.DeclarationService;
 import net.rezzix.fhirservice.service.KafkaProducerService;
 import net.rezzix.fhirservice.service.ValidationService;
 
@@ -16,16 +17,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/dpp")
 public class DeclarationController {
 
-    private final FhirContext ctx = FhirContext.forR5();
-    private final KafkaProducerService kafkaProducerService;
-    private final ValidationService validationService;
+    private final DeclarationService declarationService;
+    private final FhirContext fhirContext;
     
-
-    public DeclarationController(KafkaProducerService kafkaProducerService, ValidationService validationService) {
-        this.kafkaProducerService = kafkaProducerService;
-        this.validationService = validationService;
+    public DeclarationController(DeclarationService declarationService, FhirContext fhirContext) {
+        this.declarationService = declarationService;
+        this.fhirContext = fhirContext;
     }
-
+    
     @PostMapping(
         value = "/declaration",
         consumes = { "application/fhir+json", MediaType.APPLICATION_JSON_VALUE },
@@ -33,85 +32,15 @@ public class DeclarationController {
     )
     public ResponseEntity<String> receiveDeclaration(@RequestBody String bundleJson) {
         try {
-            Bundle bundle = (Bundle) ctx.newJsonParser().parseResource(bundleJson);
-            String pretty = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
+            Bundle bundle = (Bundle) fhirContext.newJsonParser().parseResource(bundleJson);
+            String pretty = fhirContext.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
 
             System.out.println("=== Received FHIR Bundle ===");
             System.out.println(pretty);
             System.out.println("=== End FHIR Bundle ===");
             
-            validationService.validateBundle(bundle);
-
-            for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
-                if (entry.getResource() instanceof Patient patient) {
-                    System.out.println("Patient: " + patient.getNameFirstRep().getNameAsSingleString());
-                    continue;
-                }
-                if (entry.getResource() instanceof Organization organization) {
-                    System.out.println("Organization: " + organization.getName());
-                    continue;
-                }
-                else if (entry.getResource() instanceof Practitioner practitioner) {
-                    System.out.println("Practitioner: " + practitioner.getNameFirstRep().getNameAsSingleString());
-                    continue;
-                }
-                else if (entry.getResource() instanceof PractitionerRole practitionerRole) {
-                	/*for (Coding practitionerCoding : practitionerRole.getCode().getCoding())
-                		System.out.println("Role: " + practitionerCoding.getDisplay() + " Code:" + practitionerCoding.getCode() + " System:" + practitionerCoding.getSystem() );*/
-                	continue;
-                }
-                else if (entry.getResource() instanceof Condition condition) {
-                	for (Coding conditionCoding : condition.getCode().getCoding())
-                		System.out.println("Diagnosis: " + conditionCoding.getDisplay() + " Code:" + conditionCoding.getCode() + " System:" + conditionCoding.getSystem() );
-                	continue;
-                }
-                else if (entry.getResource() instanceof Procedure procedure) {
-                    for (Coding procedureCoding : procedure.getCode().getCoding())
-                		System.out.println("Procedure: " + procedureCoding.getDisplay() + " Code:" + procedureCoding.getCode() + " System:" + procedureCoding.getSystem() );
-                    continue;
-                }
-                else if (entry.getResource() instanceof MedicationAdministration medAdmin) {
-                    System.out.println("MedicationAdministration ID: " + medAdmin.getIdElement().getIdPart());
-                    System.out.println("Status: " + medAdmin.getStatus());
-
-                    // Occurrence time
-                    if (medAdmin.hasOccurenceDateTimeType()) {
-                        System.out.println("Occurred: " + medAdmin.getOccurenceDateTimeType().getValueAsString());
-                    }
-
-                    // Medication reference or concept
-                    if (medAdmin.hasMedication()) {
-                        if (medAdmin.getMedication().hasReference()) {
-                            System.out.println("Medication reference: " + medAdmin.getMedication().getReference().getReference());
-                        }
-                        if (medAdmin.getMedication().hasConcept()) {
-                            CodeableConcept cc = medAdmin.getMedication().getConcept();
-                            cc.getCoding().forEach(c ->
-                                System.out.println("Medication code: " + c.getSystem() + " | " + c.getCode() + " | " + c.getDisplay())
-                            );
-                            if (cc.hasText()) {
-                                System.out.println("Medication text: " + cc.getText());
-                            }
-                        }
-                    }
-
-                    // Dosage
-                    if (medAdmin.hasDosage() && medAdmin.getDosage().hasText()) {
-                        System.out.println("Dosage: " + medAdmin.getDosage().getText());
-                    }
-                    
-                    
-                    continue;
-                } else {
-                	System.out.println("received a ressource of type " + entry.getResource().getClass());
-                }
-                
-            }
-            
-            String prettyJson = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
-            
-            kafkaProducerService.sendMessage("declarationssih", prettyJson);
-
+            declarationService.declare(bundle);
+           
             return ResponseEntity.ok("Declaration received successfully");
         } catch (Exception e) {
         	e.printStackTrace();

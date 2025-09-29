@@ -46,6 +46,9 @@ dependencies {
     
     // HAPI FHIR requires a caching provider for the validation module
     implementation "ca.uhn.hapi.fhir:hapi-fhir-caching-caffeine:${hapiFhirVersion}"
+    
+    // SLF4J for logging
+    implementation 'org.slf4j:slf4j-api:2.0.13'
 
     // Lombok for cleaner code
     compileOnly 'org.projectlombok:lombok'
