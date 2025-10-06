@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import ca.uhn.fhir.context.FhirContext;
+import net.rezzix.fhirservice.exceptions.ValidationException;
 
 @Service
 public class DeclarationService {
@@ -37,7 +38,7 @@ public class DeclarationService {
         this.fhirContext = fhirContext;
     }
     
-    public void declare(Bundle bundle) {
+    public void declare(Bundle bundle) throws ValidationException {
     	
     	validationService.validateBundleStructure(bundle);
     	

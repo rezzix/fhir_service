@@ -1,8 +1,8 @@
-package net.rezzix.fhirclient;
+package fhir_service;
 
-import ca.uhn.fhir.context.FhirContext;
-import org.hl7.fhir.r5.model.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,9 +10,32 @@ import java.net.http.HttpResponse;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
-public class FhirClient {
+import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.CodeableConcept;
+import org.hl7.fhir.r5.model.CodeableReference;
+import org.hl7.fhir.r5.model.Coding;
+import org.hl7.fhir.r5.model.Condition;
+import org.hl7.fhir.r5.model.DateTimeType;
+import org.hl7.fhir.r5.model.Encounter;
+import org.hl7.fhir.r5.model.Enumerations;
+import org.hl7.fhir.r5.model.Immunization;
+import org.hl7.fhir.r5.model.Medication;
+import org.hl7.fhir.r5.model.MedicationAdministration;
+import org.hl7.fhir.r5.model.Organization;
+import org.hl7.fhir.r5.model.Patient;
+import org.hl7.fhir.r5.model.Period;
+import org.hl7.fhir.r5.model.Practitioner;
+import org.hl7.fhir.r5.model.PractitionerRole;
+import org.hl7.fhir.r5.model.Procedure;
+import org.hl7.fhir.r5.model.Reference;
+import org.junit.jupiter.api.Test;
 
-    public static void main(String[] args) throws Exception {
+import ca.uhn.fhir.context.FhirContext;
+
+class NominalDeclarations {
+
+	@Test
+	void testNominalDeclaration1() throws IOException, InterruptedException {
         FhirContext ctx = FhirContext.forR5();
 
         // Patient
@@ -210,5 +233,6 @@ public class FhirClient {
         HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println("Server HTTP status: " + response.statusCode());
         System.out.println("Server response: " + response.body());
-    }
+	}
+
 }
