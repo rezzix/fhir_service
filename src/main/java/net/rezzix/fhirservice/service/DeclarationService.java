@@ -21,6 +21,7 @@ public class DeclarationService {
 	
 	private final KafkaProducerService kafkaProducerService;
     private final ValidationService validationService;
+    private final medicalCorrespondenceService medicalCorrespondenceService;
     private final FhirContext fhirContext;
     
     @Value("${app.kafka.topic.declarationssih}")
@@ -32,9 +33,10 @@ public class DeclarationService {
     @Value("${app.validation.coding-enabled}")
     private boolean isCodingValidationEnabled;
     
-    public DeclarationService(KafkaProducerService kafkaProducerService, ValidationService validationService, FhirContext fhirContext) {
+    public DeclarationService(KafkaProducerService kafkaProducerService, ValidationService validationService, medicalCorrespondenceService medicalCorrespondenceService, FhirContext fhirContext) {
         this.kafkaProducerService = kafkaProducerService;
         this.validationService = validationService;
+		this.medicalCorrespondenceService = medicalCorrespondenceService;
         this.fhirContext = fhirContext;
     }
     
@@ -43,6 +45,8 @@ public class DeclarationService {
     	validationService.validateBundleStructure(bundle);
     	
     	validationService.validateCodingSystems(bundle);
+    	
+    	medicalCorrespondenceService.addQualifiers(bundle);
     	
     	for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
              if (entry.getResource() instanceof Patient patient) {

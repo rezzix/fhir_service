@@ -1,4 +1,4 @@
-package fhir_service;
+package net.rezzix.fhirclient;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,29 +32,29 @@ import org.junit.jupiter.api.Test;
 
 import ca.uhn.fhir.context.FhirContext;
 
-class NominalDeclarations {
+class ProblematicDeclarations {
 
 	@Test
-	void testNominalDeclaration1() throws IOException, InterruptedException {
+	void testNoStandardSystemDeclaration1() throws IOException, InterruptedException {
         FhirContext ctx = FhirContext.forR5();
 
         // Patient
         Patient patient = new Patient();
-        patient.setId("p12314978");
+        patient.setId("p1214578");
         patient.addIdentifier().setSystem("http://msps.ma/mrn").setValue("MRN-INS");
-        patient.addName().setFamily("Hallal").addGiven("Maroua");
+        patient.addName().setFamily("Maalouli").addGiven("Firas");
         patient.setGender(Enumerations.AdministrativeGender.FEMALE);
         patient.setBirthDate(java.sql.Date.valueOf(LocalDate.of(1990, 5, 14)));
 
         // Practitioner
         Practitioner practitioner = new Practitioner();
         practitioner.setId("inpe/4587621");
-        practitioner.addName().setFamily("Rahmani").addGiven("Ikram");
+        practitioner.addName().setFamily("Bahani").addGiven("Samir");
 
         // Organization (Facility)
         Organization facility = new Organization();
         facility.setId("inpe/9872855");
-        facility.setName("Hopital Moulay Youssef");
+        facility.setName("Hopital Zaouia");
 
         // PractitionerRole
         PractitionerRole role = new PractitionerRole();
@@ -80,12 +80,6 @@ class NominalDeclarations {
         	        .setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode")
         	        .setCode("AMB")
         	        .setDisplay("ambulatory")
-        	) );
-        encounterClasses.add( new CodeableConcept().addCoding(
-        	    new Coding()
-        	        .setSystem("http://snomed.info/sct")
-        	        .setCode("396112002")
-        	        .setDisplay("ambulatory care encounter")
         	) );
         encounter.setClass_(encounterClasses);
 
@@ -225,7 +219,7 @@ class NominalDeclarations {
         // POST to server
         HttpClient http = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("http://localhost:8080/dpp/declaration"))
+            .uri(URI.create("http://localhost:8080/"))
             .header("Content-Type", "application/fhir+json")
             .POST(HttpRequest.BodyPublishers.ofString(json))
             .build();

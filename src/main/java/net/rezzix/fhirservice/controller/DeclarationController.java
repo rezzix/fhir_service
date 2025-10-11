@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/dpp")
 public class DeclarationController {
-
+	/*
     private final DeclarationService declarationService;
     private final FhirContext fhirContext;
     
@@ -47,6 +47,6 @@ public class DeclarationController {
             return ResponseEntity.badRequest().body("Invalid FHIR Bundle: " + e.getMessage());
         }
     }
-    
+    */
    
 }
