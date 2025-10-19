@@ -42,6 +42,7 @@ coding:
 
 app:
   kafka:
+    active: false
     topic:
       declarationssih: "declarationssih"
   validation:

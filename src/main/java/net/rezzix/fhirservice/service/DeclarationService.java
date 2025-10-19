@@ -29,6 +29,9 @@ public class DeclarationService {
 	private final MedicalCorrespondenceService medicalCorrespondenceService;
 	private final FhirService fhirService;
 
+	@Value("${app.kafka.active}")
+	private Boolean activeBroker;
+	
 	@Value("${app.kafka.topic.declarationssih}")
 	private String topicName;
 
@@ -119,7 +122,8 @@ public class DeclarationService {
 
 			String prettyJson = fhirService.format(bundle);
 					
-			kafkaProducerService.sendMessage(topicName, prettyJson);
+			if (activeBroker)
+				kafkaProducerService.sendMessage(topicName, prettyJson);
 
 		}
 		return outcome;
