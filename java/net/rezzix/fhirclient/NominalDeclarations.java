@@ -16,18 +16,23 @@ import org.hl7.fhir.r5.model.CodeableReference;
 import org.hl7.fhir.r5.model.Coding;
 import org.hl7.fhir.r5.model.Condition;
 import org.hl7.fhir.r5.model.DateTimeType;
+import org.hl7.fhir.r5.model.Dosage;
 import org.hl7.fhir.r5.model.Encounter;
 import org.hl7.fhir.r5.model.Enumerations;
 import org.hl7.fhir.r5.model.Immunization;
 import org.hl7.fhir.r5.model.Medication;
 import org.hl7.fhir.r5.model.MedicationAdministration;
+import org.hl7.fhir.r5.model.MedicationDispense;
+import org.hl7.fhir.r5.model.MedicationDispense.MedicationDispensePerformerComponent;
 import org.hl7.fhir.r5.model.Organization;
 import org.hl7.fhir.r5.model.Patient;
 import org.hl7.fhir.r5.model.Period;
 import org.hl7.fhir.r5.model.Practitioner;
 import org.hl7.fhir.r5.model.PractitionerRole;
 import org.hl7.fhir.r5.model.Procedure;
+import org.hl7.fhir.r5.model.Quantity;
 import org.hl7.fhir.r5.model.Reference;
+import org.hl7.fhir.r5.model.Timing;
 import org.junit.jupiter.api.Test;
 
 import ca.uhn.fhir.context.FhirContext;
@@ -222,9 +227,8 @@ class NominalDeclarations {
         influenza.getVaccineCode().setText("Influenza vaccine");
 
         
-        // Bundle (COLLECTION)
         Bundle bundle = new Bundle();
-        bundle.setType(Bundle.BundleType.COLLECTION);
+        bundle.setType(Bundle.BundleType.TRANSACTION);
         bundle.addEntry().setResource(practitioner);
         bundle.addEntry().setResource(facility);
         bundle.addEntry().setResource(role);
@@ -237,6 +241,142 @@ class NominalDeclarations {
         bundle.addEntry().setResource(medAdmin);
         bundle.addEntry().setResource(tetanus);
         bundle.addEntry().setResource(influenza);
+
+        // Serialize to JSON
+        String json = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
+        System.out.println("=== Outgoing FHIR Bundle ===");
+        System.out.println(json);
+        System.out.println("=== End Outgoing FHIR Bundle ===");
+
+        // POST to server
+        HttpClient http = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create("http://localhost:8080/"))
+            .header("Content-Type", "application/fhir+json")
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+
+        HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+        System.out.println("Server HTTP status: " + response.statusCode());
+        System.out.println("Server response: " + response.body());
+	}
+	
+	
+	@Test
+	void testDispenseDeclaration1() throws IOException, InterruptedException {
+        FhirContext ctx = FhirContext.forR5();
+
+        // Patient
+        Patient patient = new Patient();
+        patient.setId("p547814562");
+        patient.addIdentifier().setSystem("http://msps.ma/mrn").setValue("MRN-INS");
+        patient.addName().setFamily("Malki").addGiven("Alaa");
+        patient.setGender(Enumerations.AdministrativeGender.MALE);
+        patient.setBirthDate(java.sql.Date.valueOf(LocalDate.of(1975, 8, 29)));
+
+        // Practitioner
+        Practitioner practitioner = new Practitioner();
+        practitioner.setId("inpe/4587621");
+        practitioner.addName().setFamily("Rahali").addGiven("Omar");
+
+        // Organization (Facility)
+        Organization facility = new Organization();
+        facility.setId("inpe/648721");
+        facility.setName("Hopital Ibn Zohr");
+
+        // PractitionerRole
+        PractitionerRole role = new PractitionerRole();
+        role.setId("affectation/abc");
+        role.setPractitioner(new Reference(practitioner.getId()));
+        role.setOrganization(new Reference(facility.getId()));
+        role.addCode().addCoding()
+            .setSystem("http://snomed.info/sct")
+            .setCode("309343006")
+            .setDisplay("Orthopedic surgeon");
+        
+     // Encounter: links patient, practitioner, and facility
+        Encounter encounter = new Encounter();
+        encounter.setId("Encounter/enc1");
+
+        // Status of the encounter
+        encounter.setStatus(Enumerations.EncounterStatus.COMPLETED);
+
+        // Class (inpatient, outpatient, emergency, etc.)
+        ArrayList<CodeableConcept> encounterClasses=new ArrayList<CodeableConcept>();
+        encounterClasses.add( new CodeableConcept().addCoding(
+        	    new Coding()
+        	        .setSystem("http://terminology.hl7.org/CodeSystem/v3-ActCode")
+        	        .setCode("AMB")
+        	        .setDisplay("ambulatory")
+        	) );
+        encounterClasses.add( new CodeableConcept().addCoding(
+        	    new Coding()
+        	        .setSystem("http://snomed.info/sct")
+        	        .setCode("396112002")
+        	        .setDisplay("ambulatory care encounter")
+        	) );
+        encounter.setClass_(encounterClasses);
+
+        // Subject (the patient)
+        encounter.setSubject(new Reference(patient.getId()));
+
+        // Participant (the practitioner)
+        Encounter.EncounterParticipantComponent participant = new Encounter.EncounterParticipantComponent();
+        participant.setActor(new Reference(practitioner.getId()));
+        encounter.addParticipant(participant);
+
+        // Service provider (the facility/organization)
+        encounter.setServiceProvider(new Reference(facility.getId()));
+
+        // Period (when the encounter happened)
+        Period period = new Period();
+        period.setStartElement(new DateTimeType("2025-10-25T09:00:00Z"));
+        period.setEndElement(new DateTimeType("2025-10-25T11:00:00Z"));
+        encounter.setActualPeriod(period);
+
+        MedicationDispense dispense = new MedicationDispense();
+
+        // Set ID
+        dispense.setId("medDispense1");
+
+        // Set the medication reference (Advil 400)
+        CodeableConcept medicationCode = new CodeableConcept()
+                .addCoding(new Coding()
+                        .setSystem("http://www.nlm.nih.gov/research/umls/rxnorm")
+                        .setCode("697")
+                        .setDisplay("Ibuprofen 400 mg"));
+        dispense.setMedication(new CodeableReference(medicationCode));
+
+        // Set the subject (patient)
+        Reference subjectReference = new Reference("Patient/patient1");
+        dispense.setSubject(subjectReference);
+
+        // Set the quantity dispensed
+        Quantity quantity = new Quantity()
+                .setValue(10) // 10 tablets dispensed
+                .setUnit("tablets");
+        dispense.setQuantity(quantity);
+
+        dispense.setWhenHandedOver(new DateTimeType("2025-10-10T12:00:00Z").getValue());
+
+        // Add dosage instructions
+        Dosage dosage = new Dosage().setText("Take 1 tablet by mouth every 6 to 8 hours as needed.");
+        dispense.addDosageInstruction(dosage);
+
+        // Set the dispenser (e.g., pharmacy or health care provider)
+        Reference dispenserReference = new Reference("Organization/pharmacy1");
+        MedicationDispensePerformerComponent pharmacy = new MedicationDispensePerformerComponent();
+        pharmacy.setActor(dispenserReference);
+        dispense.addPerformer(pharmacy);
+        
+        Bundle bundle = new Bundle();
+        bundle.setType(Bundle.BundleType.TRANSACTION);
+        bundle.addEntry().setResource(practitioner);
+        bundle.addEntry().setResource(facility);
+        bundle.addEntry().setResource(role);
+        bundle.addEntry().setResource(patient);
+        bundle.addEntry().setResource(encounter);
+        bundle.addEntry().setResource(dispense);
 
         // Serialize to JSON
         String json = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);

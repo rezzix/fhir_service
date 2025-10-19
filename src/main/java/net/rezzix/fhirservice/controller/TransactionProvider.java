@@ -1,10 +1,14 @@
 package net.rezzix.fhirservice.controller;
 
 import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
 import org.springframework.stereotype.Component;
 
 import ca.uhn.fhir.rest.annotation.Transaction;
 import ca.uhn.fhir.rest.annotation.TransactionParam;
+import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import net.rezzix.fhirservice.exceptions.ValidationException;
 import net.rezzix.fhirservice.service.DeclarationService;
 
@@ -26,19 +30,39 @@ public class TransactionProvider {
      */
     @Transaction
     public Bundle processDeclarationBundle(@TransactionParam Bundle theBundle) {
-        try {
-            // The existing declaration service is called to handle the bundle
+    	try {
             declarationService.declare(theBundle);
+
+            // On success, return a minimal, successful response bundle.
+            Bundle responseBundle = new Bundle();
+            responseBundle.setType(Bundle.BundleType.TRANSACTIONRESPONSE);
+
+            // Add an OperationOutcome to the response to indicate success.
+            OperationOutcome outcome = new OperationOutcome();
+            outcome.addIssue()
+                .setSeverity(IssueSeverity.INFORMATION)
+                .setCode(IssueType.INFORMATIONAL)
+                .setDiagnostics("Transaction processed successfully.");
+            
+            // Add the outcome as the first entry in the response bundle
+            responseBundle.addEntry()
+                .setResource(outcome)
+                .getResponse().setStatus("200 OK");
+
+            return responseBundle;
+
         } catch (ValidationException e) {
-            // In a production system, you should return an OperationOutcome resource
-            // to provide structured error feedback to the client.
-            throw new ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException("Validation failed: " + e.getMessage());
+            // On validation failure, create a detailed OperationOutcome.
+            OperationOutcome outcome = new OperationOutcome();
+            outcome.addIssue()
+                .setSeverity(IssueSeverity.ERROR)
+                .setCode(IssueType.INVALID)
+                .setDiagnostics(e.getMessage());
+
+            // Throw a specific HAPI FHIR exception that carries the OperationOutcome.
+            // This will result in a proper HTTP 422 response with the OO as the body.
+            throw new UnprocessableEntityException("Validation failed", outcome);
         }
 
-        // According to the FHIR specification, a transaction should return a response bundle.
-        // For this use case, we can return a minimal response.
-        Bundle responseBundle = new Bundle();
-        responseBundle.setType(Bundle.BundleType.TRANSACTIONRESPONSE);
-        return responseBundle;
     }
 }

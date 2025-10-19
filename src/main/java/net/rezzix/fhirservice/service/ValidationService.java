@@ -4,21 +4,23 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.context.support.DefaultProfileValidationSupport;
 import ca.uhn.fhir.validation.FhirValidator;
 import ca.uhn.fhir.validation.ValidationResult;
-import lombok.extern.slf4j.Slf4j;
+//import lombok.extern.slf4j.Slf4j;
 import net.rezzix.fhirservice.exceptions.ValidationException;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 
-import org.hl7.fhir.common.hapi.validation.support.CommonCodeSystemsTerminologyService;
-import org.hl7.fhir.common.hapi.validation.support.InMemoryTerminologyServerValidationSupport;
-import org.hl7.fhir.common.hapi.validation.support.ValidationSupportChain;
-import org.hl7.fhir.common.hapi.validation.validator.FhirInstanceValidator;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.Coding;
 import org.hl7.fhir.r5.model.Condition;
 import org.hl7.fhir.r5.model.Encounter;
 import org.hl7.fhir.r5.model.MedicationAdministration;
+import org.hl7.fhir.r5.model.OperationOutcome;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
+import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
+import org.hl7.fhir.r5.model.OperationOutcome.OperationOutcomeIssueComponent;
 import org.hl7.fhir.r5.model.Organization;
 import org.hl7.fhir.r5.model.Patient;
 import org.hl7.fhir.r5.model.Practitioner;
@@ -29,7 +31,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
+//@Slf4j
 public class ValidationService {
 	@Value("${coding.encounterClass.system}")
     private String encounterClassSystem;
@@ -37,15 +39,12 @@ public class ValidationService {
 	@Value("${coding.encounterClass.validation}")
 	private String encounterClassValidation;
 
-    private final FhirValidator validator;
-    //private final FhirContext fhirContext;
-    
     static final String REQUIRED = "required";
     static final String OPTIONAL = "optional";
 
-    public ValidationService(FhirContext fhirContext) {
-        //this.fhirContext = fhirContext;
-
+    public ValidationService() {
+        
+/*
         // Create a validation support chain (this part was correct)
         ValidationSupportChain validationSupportChain = new ValidationSupportChain(
             new DefaultProfileValidationSupport(fhirContext),
@@ -60,22 +59,22 @@ public class ValidationService {
         this.validator = fhirContext.newValidator();
 
         // 3. Register the configured instance validator module with the engine
-        this.validator.registerValidatorModule(instanceValidator);
+        this.validator.registerValidatorModule(instanceValidator);*/
     }
     /**
      * Validates a FHIR Bundle against standard profiles and structure.
      * @param bundle The bundle to validate.
      * @return true if valid, false otherwise.
      */
-    public boolean validateBundleStructure(Bundle bundle) {
-        //log.info("Performing bundle structure validation...");
-        ValidationResult result = validator.validateWithResult(bundle);
+    public ValidationResult validateBundleStructure(Bundle bundle) {
+    	/**FIXME add FHIR validator
+    	/*ValidationResult result = validator.validateWithResult(bundle);
         if (!result.isSuccessful()) {
-            //log.error("Bundle structure validation failed: {}", result.toString());
+        	//structureOutcome.setSeverity(IssueSeverity.ERROR);
         } else {
-            //log.info("Bundle structure validation successful.");
-        }
-        return result.isSuccessful();
+        	//log.info("Bundle structure validation successful.");
+        }*/
+        return null;
     }
 
     /**
@@ -86,17 +85,20 @@ public class ValidationService {
      * @return true if valid, false otherwise.
      * @throws ValidationException 
      */
-    public boolean validateCodingSystems(Bundle bundle) throws ValidationException {
-    	ValidationResult result = validator.validateWithResult(bundle);
+    public OperationOutcome validateCodingSystems(Bundle bundle) throws ValidationException {
+    	OperationOutcome outcome = new OperationOutcome();
+    	//ValidationResult result = new ValidationResult(null, null)
     	for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
-    		validateCodingSystem(entry.getResource());
+    		OperationOutcomeIssueComponent codingValidation = validateCodingSystem(entry.getResource());
+    		if (outcome!=null)
+    			outcome.addIssue(codingValidation);    			
     	}
-    	return result.isSuccessful();
+    	return outcome;
     }
     
-    public boolean validateCodingSystem(Resource resource) throws ValidationException {
-    	new Coding().setSystem("http://snomed.info/sct");
-    	 	
+    public OperationOutcomeIssueComponent validateCodingSystem(Resource resource) throws ValidationException {
+    	//new Coding().setSystem("http://snomed.info/sct");
+    	OperationOutcomeIssueComponent issue = null;	
         if (resource instanceof Patient patient) {
         	 
         }
@@ -111,13 +113,21 @@ public class ValidationService {
         }
         else if (resource instanceof Encounter encounter) {        	
         	CodeableConcept encounterClass = encounter.getClass_().stream().filter( encclass-> encclass.hasCoding(encounterClassSystem)).findAny().orElse(null);
+        	issue = new OperationOutcomeIssueComponent();
         	if (encounterClass != null) {
-        		//System.out.println();
+        		return null;
         	} else if (OPTIONAL.equals(encounterClassValidation)) {
-        		//log
+                issue.setSeverity(IssueSeverity.WARNING);
+                issue.setCode(IssueType.INCOMPLETE);
+                issue.setDiagnostics("the encounter should have " + encounterClassSystem);
         	} else if (REQUIRED.equals(encounterClassValidation)) {
-        		throw new ValidationException("no " + encounterClassSystem + " found in resource " + encounterClass + " " + encounter);
+        		//throw new ValidationException("no " + encounterClassSystem + " found in resource " + encounterClass + " " + encounter);
+                issue.setSeverity(IssueSeverity.ERROR);
+                issue.setCode(IssueType.CODEINVALID);
+                issue.setDiagnostics("the encounter must have " + encounterClassSystem);
         	}
+        	return issue;           
+            
         }
         else if (resource instanceof Condition condition) {
         	
@@ -130,7 +140,7 @@ public class ValidationService {
         } 
             
             
-        return true;
+        return issue;
         
     }
 

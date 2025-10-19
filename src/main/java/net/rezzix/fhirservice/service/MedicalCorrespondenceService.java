@@ -17,7 +17,7 @@ import ca.uhn.fhir.context.FhirContext;
 import net.rezzix.fhirservice.exceptions.ValidationException;
 
 @Service
-public class medicalCorrespondenceService {
+public class MedicalCorrespondenceService {
 
 	public static void addQualifiers(Bundle bundle) {
 		// TODO Auto-generated method stub

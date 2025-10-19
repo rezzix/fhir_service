@@ -194,9 +194,8 @@ class ProblematicDeclarations {
         influenza.getVaccineCode().setText("Influenza vaccine");
 
         
-        // Bundle (COLLECTION)
         Bundle bundle = new Bundle();
-        bundle.setType(Bundle.BundleType.COLLECTION);
+        bundle.setType(Bundle.BundleType.TRANSACTION);
         bundle.addEntry().setResource(practitioner);
         bundle.addEntry().setResource(facility);
         bundle.addEntry().setResource(role);

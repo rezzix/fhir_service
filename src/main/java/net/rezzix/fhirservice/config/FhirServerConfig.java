@@ -1,17 +1,7 @@
 package net.rezzix.fhirservice.config;
 
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import ca.uhn.fhir.context.FhirContext;
-import ca.uhn.fhir.rest.server.RestfulServer;
-import ca.uhn.fhir.rest.server.interceptor.ResponseHighlighterInterceptor;
-import net.rezzix.fhirservice.controller.TransactionProvider;
-
-@Configuration
 public class FhirServerConfig {
-
+/*
     @Bean
     public FhirContext fhirContext() {
         return FhirContext.forR5();
@@ -33,5 +23,5 @@ public class FhirServerConfig {
         registrationBean.setLoadOnStartup(1);
 
         return registrationBean;
-    }
+    }*/
 }
