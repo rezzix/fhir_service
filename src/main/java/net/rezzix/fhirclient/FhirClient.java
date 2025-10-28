@@ -209,7 +209,7 @@ public class FhirClient {
         // Serialize to JSON
         String json = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
         System.out.println("=== Outgoing FHIR Bundle ===");
-        System.out.println(json);
+        //System.out.println(json);
         System.out.println("=== End Outgoing FHIR Bundle ===");
 
         // POST to server

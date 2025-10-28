@@ -1,9 +1,12 @@
 package net.rezzix.fhirservice.controller;
 
 import org.hl7.fhir.r5.model.Bundle;
+import org.hl7.fhir.r5.model.Bundle.BundleEntryComponent;
 import org.hl7.fhir.r5.model.OperationOutcome;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueSeverity;
 import org.hl7.fhir.r5.model.OperationOutcome.IssueType;
+import org.hl7.fhir.r5.model.OperationOutcome.OperationOutcomeIssueComponent;
+import org.hl7.fhir.r5.model.Property;
 import org.springframework.stereotype.Component;
 
 import ca.uhn.fhir.rest.annotation.Transaction;
@@ -11,6 +14,7 @@ import ca.uhn.fhir.rest.annotation.TransactionParam;
 import ca.uhn.fhir.rest.server.exceptions.UnprocessableEntityException;
 import net.rezzix.fhirservice.exceptions.ValidationException;
 import net.rezzix.fhirservice.service.DeclarationService;
+import net.rezzix.fhirservice.utils.Utils;
 
 @Component
 public class TransactionProvider {
@@ -31,23 +35,40 @@ public class TransactionProvider {
     @Transaction
     public Bundle processDeclarationBundle(@TransactionParam Bundle theBundle) {
     	try {
-            declarationService.declare(theBundle);
+            Bundle declarationBundle = declarationService.declare(theBundle);
 
             // On success, return a minimal, successful response bundle.
             Bundle responseBundle = new Bundle();
             responseBundle.setType(Bundle.BundleType.TRANSACTIONRESPONSE);
 
+            responseBundle.addEntry(declarationBundle.getEntry().get(0));
+            
             // Add an OperationOutcome to the response to indicate success.
             OperationOutcome outcome = new OperationOutcome();
-            outcome.addIssue()
-                .setSeverity(IssueSeverity.INFORMATION)
-                .setCode(IssueType.INFORMATIONAL)
-                .setDiagnostics("Transaction processed successfully.");
             
-            // Add the outcome as the first entry in the response bundle
-            responseBundle.addEntry()
-                .setResource(outcome)
-                .getResponse().setStatus("200 OK");
+            //TODO send this outcome to response
+            if (Utils.getInstance().containsError((OperationOutcome) declarationBundle.getEntry().get(0).getResponse().getOutcome())) {
+            	 outcome.addIssue()
+                 .setSeverity(IssueSeverity.ERROR)
+                 .setCode(IssueType.CODEINVALID)
+                 .setDiagnostics("Transaction not saved.");
+             
+	             // Add the outcome as the first entry in the response bundle
+	             responseBundle.addEntry()
+	                 .setResource(outcome)
+	                 .getResponse().setStatus("400 KO");
+            } else {
+            	 outcome.addIssue()
+                 .setSeverity(IssueSeverity.INFORMATION)
+                 .setCode(IssueType.SUCCESS)
+                 .setDiagnostics("Transaction processed successfully.");
+             
+            	 // Add the outcome as the first entry in the response bundle
+            	 responseBundle.addEntry()
+                 .setResource(outcome)
+                 .getResponse().setStatus("200 OK");
+            	
+            }
 
             return responseBundle;
 

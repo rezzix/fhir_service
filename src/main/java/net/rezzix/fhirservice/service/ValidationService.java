@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.hl7.fhir.r5.model.Base;
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.Coding;
@@ -91,8 +92,9 @@ public class ValidationService {
     	for (Bundle.BundleEntryComponent entry : bundle.getEntry()) {
     		OperationOutcomeIssueComponent codingValidation = validateCodingSystem(entry.getResource());
     		if (outcome!=null)
-    			outcome.addIssue(codingValidation);    			
+    			outcome.addIssue(codingValidation);
     	}
+    	
     	return outcome;
     }
     

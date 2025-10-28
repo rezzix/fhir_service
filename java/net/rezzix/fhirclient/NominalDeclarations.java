@@ -45,8 +45,8 @@ class NominalDeclarations {
 
         // Patient
         Patient patient = new Patient();
-        patient.setId("p12314978");
-        patient.addIdentifier().setSystem("http://msps.ma/mrn").setValue("MRN-INS");
+        patient.setId("12314978");
+        patient.addIdentifier().setSystem("http://mi.ma/cnie").setValue("A432654");
         patient.addName().setFamily("Hallal").addGiven("Maroua");
         patient.setGender(Enumerations.AdministrativeGender.FEMALE);
         patient.setBirthDate(java.sql.Date.valueOf(LocalDate.of(1990, 5, 14)));
@@ -245,7 +245,7 @@ class NominalDeclarations {
         // Serialize to JSON
         String json = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
         System.out.println("=== Outgoing FHIR Bundle ===");
-        System.out.println(json);
+        //System.out.println(json);
         System.out.println("=== End Outgoing FHIR Bundle ===");
 
         // POST to server
@@ -269,7 +269,7 @@ class NominalDeclarations {
         // Patient
         Patient patient = new Patient();
         patient.setId("p547814562");
-        patient.addIdentifier().setSystem("http://msps.ma/mrn").setValue("MRN-INS");
+        patient.addIdentifier().setSystem("http://mi.ma/cnie").setValue("E590879");
         patient.addName().setFamily("Malki").addGiven("Alaa");
         patient.setGender(Enumerations.AdministrativeGender.MALE);
         patient.setBirthDate(java.sql.Date.valueOf(LocalDate.of(1975, 8, 29)));
@@ -381,7 +381,7 @@ class NominalDeclarations {
         // Serialize to JSON
         String json = ctx.newJsonParser().setPrettyPrint(true).encodeResourceToString(bundle);
         System.out.println("=== Outgoing FHIR Bundle ===");
-        System.out.println(json);
+        //System.out.println(json);
         System.out.println("=== End Outgoing FHIR Bundle ===");
 
         // POST to server
