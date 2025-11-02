@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: dppservice
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    producer:
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        delivery.timeout.ms: 3000
+        request.timeout.ms: 1000
+        retry.backoff.ms: 1000
+        max.block.ms: 1000
+
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+coding:
+  practitionnerCategory:
+    system: "CNSS"
+    validation: "optional"
+  practitionnerSpeciality:
+    system: "CNSS"
+    validation: "optional"
+  encounterClass:
+    system: "http://snomed.info/sct"
+    validation: "required"
+
+
+app:
+  kafka:
+    active: true
+    topic:
+      declarationssih: "declarationssih"
+  validation:
+    # Set to true to validate the bundle structure and profiles
+    bundle-enabled: true
+    # Set to true to validate terminology and coding systems (requires internet or local terminology server)
+    coding-enabled: true

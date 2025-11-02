@@ -1,11 +1,26 @@
 spring:
   application:
     name: dppservice
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
   kafka:
     bootstrap-servers: 172.16.1.105:9092
 
     producer:
+      retries: 3
+      properties:
+        delivery.timeout.ms: 3000
+        request.timeout.ms: 1000
+        retry.backoff.ms: 1000
+        max.block.ms: 1000
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 

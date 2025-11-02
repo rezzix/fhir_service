@@ -1,0 +1,191 @@
+{
+  "resourceType": "Bundle",
+  "type": "transaction",
+  "entry": [ {
+    "resource": {
+      "resourceType": "Practitioner",
+      "id": "{{practitionerId}}",
+      "name": [ {
+        "family": "{{practitionerFamilyName}}",
+        "given": [ "{{practitionerGivenName}}" ]
+      } ]
+    }
+  }, {
+    "resource": {
+      "resourceType": "Organization",
+      "id": "{{organizationId}}",
+      "name": "{{organizationName}}"
+    }
+  }, {
+    "resource": {
+      "resourceType": "PractitionerRole",
+      "id": "{{practitionerRoleId}}",
+      "practitioner": {
+        "reference": "{{practitionerId}}"
+      },
+      "organization": {
+        "reference": "{{organizationId}}"
+      },
+      "code": [ {
+        "coding": [ {
+          "system": "{{practitionerRoleSystem}}",
+          "code": "{{practitionerRoleCode}}",
+          "display": "{{practitionerRoleDisplay}}"
+        } ]
+      } ]
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "{{patientId}}",
+      "identifier": [ {
+        "system": "{{patientIdentifierSystem}}",
+        "value": "{{patientIdentifierValue}}"
+      } ],
+      "name": [ {
+        "family": "{{patientFamilyName}}",
+        "given": [ "{{patientGivenName}}" ]
+      } ],
+      "gender": "{{patientGender}}",
+      "birthDate": "{{patientBirthDate}}"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Encounter",
+      "id": "{{encounterId}}",
+      "status": "{{encounterStatus}}",
+      "class": [ {
+        "coding": [ {
+          "system": "{{encounterClassSystem}}",
+          "code": "{{encounterClassCode}}",
+          "display": "{{encounterClassDisplay}}"
+        } ]
+      } ],
+      "subject": {
+        "reference": "{{patientId}}"
+      },
+      "serviceProvider": {
+        "reference": "{{organizationId}}"
+      },
+      "participant": [ {
+        "actor": {
+          "reference": "{{practitionerId}}"
+        }
+      } ],
+      "actualPeriod": {
+        "start": "{{encounterStart}}",
+        "end": "{{encounterEnd}}"
+      }
+    }
+  }, {
+    "resource": {
+      "resourceType": "Condition",
+      "id": "{{conditionId}}",
+      "clinicalStatus": {
+        "coding": [ {
+          "system": "{{conditionClinicalStatusSystem}}",
+          "code": "{{conditionClinicalStatusCode}}",
+          "display": "{{conditionClinicalStatusDisplay}}"
+        } ]
+      },
+      "code": {
+        "coding": [ {
+          "system": "{{conditionCodeSystem}}",
+          "code": "{{conditionCode}}",
+          "display": "{{conditionCodeDisplay}}"
+        } ]
+      },
+      "subject": {
+        "reference": "{{patientId}}"
+      }
+    }
+  },
+  {{#procedures}}
+  {
+    "resource": {
+      "resourceType": "Procedure",
+      "id": "{{id}}",
+      "code": {
+        "coding": [
+          {{#codes}}
+          {
+            "system": "{{system}}",
+            "code": "{{code}}",
+            "display": "{{display}}"
+          }{{^last}},{{/last}}
+          {{/codes}}
+        ]
+      },
+      "subject": {
+        "reference": "{{patientId}}"
+      }
+    }
+  }{{^last}},{{/last}}
+  {{/procedures}}
+  ,
+  {{#medications}}
+  {
+    "resource": {
+      "resourceType": "Medication",
+      "id": "{{id}}",
+      "code": {
+        "coding": [
+          {{#codes}}
+          {
+            "system": "{{system}}",
+            "code": "{{code}}",
+            "display": "{{display}}"
+          }{{^last}},{{/last}}
+          {{/codes}}
+        ],
+        "text": "{{text}}"
+      }
+    }
+  }{{^last}},{{/last}}
+  {{/medications}}
+  ,
+  {{#medicationAdministrations}}
+  {
+    "resource": {
+      "resourceType": "MedicationAdministration",
+      "id": "{{id}}",
+      "status": "{{status}}",
+      "medication": {
+        "reference": {
+          "reference": "{{medicationReference}}"
+        }
+      },
+      "subject": {
+        "reference": "{{patientId}}"
+      },
+      "occurenceDateTime": "{{occurrenceDateTime}}",
+      "dosage": {
+        "text": "{{dosageText}}"
+      }
+    }
+  }{{^last}},{{/last}}
+  {{/medicationAdministrations}}
+  ,
+  {{#immunizations}}
+  {
+    "resource": {
+      "resourceType": "Immunization",
+      "id": "{{id}}",
+      "status": "{{status}}",
+      "vaccineCode": {
+        "coding": [ {
+          "system": "{{vaccineCodeSystem}}",
+          "code": "{{vaccineCode}}",
+          "display": "{{vaccineCodeDisplay}}"
+        } ],
+        "text": "{{vaccineCodeText}}"
+      },
+      "patient": {
+        "reference": "{{patientId}}"
+      },
+      "occurrenceDateTime": "{{occurrenceDateTime}}"
+    }
+  }{{^last}},{{/last}}
+  {{/immunizations}}
+  ]
+}

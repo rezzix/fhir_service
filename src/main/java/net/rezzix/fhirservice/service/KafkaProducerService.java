@@ -1,6 +1,9 @@
 package net.rezzix.fhirservice.service;
 
+import java.util.concurrent.ExecutionException;
+
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,8 +15,7 @@ public class KafkaProducerService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendMessage(String topic, String message) {
-        kafkaTemplate.send(topic, message);
-        kafkaTemplate.flush();
+    public SendResult<String, String> sendMessage(String topic, String message) throws InterruptedException, ExecutionException {
+        return kafkaTemplate.send(topic, message).get();
     }
 }
