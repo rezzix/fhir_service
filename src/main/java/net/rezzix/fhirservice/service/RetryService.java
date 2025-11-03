@@ -32,7 +32,7 @@ public class RetryService {
         this.fhirService = fhirService;
     }
 
-    @Scheduled(fixedRate = 60000) // 5 minutes
+    @Scheduled(fixedRate = 60000) // every minutes
     @Transactional
     public void retryFailedDeclarations() {
         logger.info("Starting retry job for failed declarations.");
