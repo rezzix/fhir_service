@@ -103,6 +103,7 @@ public class DeclarationService {
 	        declarationresponseBundle.setTimestamp(new Date());
 	        
 	        declarationresponseBundle.addEntry(Utils.getInstance().createResourceResponse(outcome));
+	        declarationresponseBundle.setId(""+declaration.getId());
 			
 			return declarationresponseBundle;
 		} catch (Exception e) {

@@ -251,13 +251,14 @@ class NominalDeclarations {
         // POST to server
         HttpClient http = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("http://localhost:8080/"))
+            .uri(URI.create("http://localhost:8080/fhir"))
             .header("Content-Type", "application/fhir+json")
             .POST(HttpRequest.BodyPublishers.ofString(json))
             .build();
 
         HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println("Server HTTP status: " + response.statusCode());
+        System.out.println("Server HTTP headers: " + response.headers());
         System.out.println("Server response: " + response.body());
 	}
 	
@@ -387,13 +388,14 @@ class NominalDeclarations {
         // POST to server
         HttpClient http = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("http://localhost:8080/"))
+            .uri(URI.create("http://localhost:8080/fhir"))
             .header("Content-Type", "application/fhir+json")
             .POST(HttpRequest.BodyPublishers.ofString(json))
             .build();
 
         HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
         System.out.println("Server HTTP status: " + response.statusCode());
+        System.out.println("Server HTTP headers: " + response.headers());
         System.out.println("Server response: " + response.body());
 	}
 

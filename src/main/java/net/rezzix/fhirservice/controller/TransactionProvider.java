@@ -66,7 +66,7 @@ public class TransactionProvider {
             	 // Add the outcome as the first entry in the response bundle
             	 responseBundle.addEntry()
                  .setResource(outcome)
-                 .getResponse().setStatus("200 OK");
+                 .getResponse().setLocation("/api/declarations/" + declarationBundle.getId()).setStatus("200 OK");
             	
             }
 

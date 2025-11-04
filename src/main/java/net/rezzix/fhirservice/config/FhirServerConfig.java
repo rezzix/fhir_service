@@ -24,8 +24,9 @@ public class FhirServerConfig {
         fhirServer.registerInterceptor(new ResponseHighlighterInterceptor());
 
         // Use Spring's ServletRegistrationBean to register the HAPI FHIR servlet
-        // and map it to the application's root URL ("/*").
-        ServletRegistrationBean<RestfulServer> registration = new ServletRegistrationBean<>(fhirServer, "/*");
+        // and map it to FHIR-specific paths only, leaving /api/** available for other controllers
+        // Use a more specific mapping that doesn't conflict with Spring Boot's default servlet
+        ServletRegistrationBean<RestfulServer> registration = new ServletRegistrationBean<>(fhirServer, "/fhir/*");
         registration.setLoadOnStartup(1);
         return registration;
     }
