@@ -2,15 +2,15 @@ receivers:
   otlp:
     protocols:
       grpc:
+        endpoint: 0.0.0.0:4317
       http:
+        endpoint: 0.0.0.0:4318
 
 exporters:
   prometheus:
     endpoint: "0.0.0.0:8889"
-  jaeger:
-    endpoint: "jaeger:14268"
-    tls:
-      insecure: true
+  otlphttp:
+    endpoint: http://jaeger:4318
 
 service:
   pipelines:
@@ -19,4 +19,4 @@ service:
       exporters: [prometheus]
     traces:
       receivers: [otlp]
-      exporters: [jaeger]
+      exporters: [otlphttp]
