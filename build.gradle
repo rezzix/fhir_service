@@ -15,8 +15,8 @@ task runFhirClient(type: JavaExec) {
 }
 
 group = 'net.rezzix.fhirservice'
-version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+	version = '0.0.1-SNAPSHOT'
+	description = 'Demo project for Spring Boot'
 
 java {
 	toolchain {
@@ -60,6 +60,15 @@ dependencies {
     
     implementation "org.springframework.kafka:spring-kafka"
     //implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+    
+    // OpenTelemetry dependencies for performance monitoring
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations:2.10.0'
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter:2.10.0'
+    
+    // Individual OpenTelemetry SDK components
+    implementation 'io.opentelemetry:opentelemetry-sdk:1.45.0'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp:1.45.0'
+    implementation 'io.opentelemetry:opentelemetry-exporter-otlp-grpc:1.45.0'
     
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

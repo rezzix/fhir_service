@@ -39,6 +39,19 @@ coding:
     system: "http://snomed.info/sct"
     validation: "required"
 
+# OpenTelemetry configuration
+otel:
+  service:
+    name: fhir-service
+  exporter:
+    otlp:
+      endpoint: http://localhost:4317
+  logs:
+    exporter: none
+  traces:
+    exporter: otlp
+  metrics:
+    exporter: otlp
 
 app:
   kafka:
@@ -54,3 +67,23 @@ app:
 logging:
   level:
     org.apache.kafka.clients.NetworkClient: ERROR
+    io.opentelemetry: DEBUG
+
+# OpenAPI / Swagger configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+    groups:
+      enabled: true
+  # Additional configuration to help with UI loading
+  webjars:
+    prefix: /webjars
+    swagger-ui:
+      version: 5.17.2  # Explicit version to match the dependency
+  show-actuator: true
+  # Make sure all paths are documented
+  paths-to-match: /**

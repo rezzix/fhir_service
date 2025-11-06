@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 
 import java.time.LocalDate;
 
@@ -20,8 +19,7 @@ public class Declaration {
 
     private String status;
 
-    @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 10000) // Set a large max size for PostgreSQL text field
     private String source;
 
     private LocalDate transferDate;

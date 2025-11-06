@@ -1,9 +1,9 @@
 package net.rezzix.fhirservice.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import net.rezzix.fhirservice.exceptions.ValidationException;
+import net.rezzix.fhirservice.model.Declaration;
+import net.rezzix.fhirservice.repository.DeclarationRepository;
+import net.rezzix.fhirservice.utils.Utils;
 
 import org.hl7.fhir.r5.model.Bundle;
 import org.hl7.fhir.r5.model.CodeableConcept;
@@ -23,11 +23,11 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import ca.uhn.fhir.context.FhirContext;
-import net.rezzix.fhirservice.exceptions.ValidationException;
-import net.rezzix.fhirservice.utils.Utils;
 
-import net.rezzix.fhirservice.model.Declaration;
-import net.rezzix.fhirservice.repository.DeclarationRepository;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class DeclarationService {
@@ -82,8 +82,8 @@ public class DeclarationService {
             } else {
                 declaration.setStatus("VALIDATED");
             }
-            declarationRepository.save(declaration);
-            outcome.addIssue().setSeverity(IssueSeverity.INFORMATION).setDiagnostics("Message received with ID : " + declaration.getId());
+            Declaration savedDeclaration = declarationRepository.save(declaration);
+            outcome.addIssue().setSeverity(IssueSeverity.INFORMATION).setDiagnostics("Message received with ID : " + savedDeclaration.getId());
             
 			if (activeBroker && !Utils.getInstance().containsError(outcome)) {
 				try {
@@ -103,7 +103,7 @@ public class DeclarationService {
 	        declarationresponseBundle.setTimestamp(new Date());
 	        
 	        declarationresponseBundle.addEntry(Utils.getInstance().createResourceResponse(outcome));
-	        declarationresponseBundle.setId(""+declaration.getId());
+	        declarationresponseBundle.setId(""+savedDeclaration.getId());
 			
 			return declarationresponseBundle;
 		} catch (Exception e) {
