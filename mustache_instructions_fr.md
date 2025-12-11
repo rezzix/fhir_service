@@ -22,7 +22,7 @@ Le modèle `declaration.mustache` s'attend à un modèle de données avec la str
 *   `practitionerRoleSystem` : Le système pour le code de rôle du praticien.
 *   `practitionerRoleCode` : Le code pour le rôle du praticien.
 *   `patientId` : L'ID du patient.
-*   `patientIdentifierSystem` : Le système pour l'identifiant du patient (CIN, )
+*   `patientIdentifierSystem` : Le système pour l'identifiant du patient (CIN, CNSS)
 *   `patientIdentifierValue` : La valeur de l'identifiant du patient.
 *   `patientFamilyName` : Le nom de famille du patient.
 *   `patientGivenName` : Le prénom du patient.

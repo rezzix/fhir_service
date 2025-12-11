@@ -39,20 +39,6 @@ coding:
     system: "http://snomed.info/sct"
     validation: "required"
 
-# OpenTelemetry configuration
-otel:
-  service:
-    name: fhir-service
-  exporter:
-    otlp:
-      endpoint: http://localhost:4317
-      protocol: grpc
-  logs:
-    exporter: none
-  traces:
-    exporter: otlp
-  metrics:
-    exporter: otlp
 
 app:
   kafka:
@@ -68,7 +54,7 @@ app:
 logging:
   level:
     org.apache.kafka.clients.NetworkClient: ERROR
-    io.opentelemetry: DEBUG
+    io.opentelemetry: WARN  # Reduce OpenTelemetry logging level
 
 # OpenAPI / Swagger configuration
 springdoc:
@@ -88,3 +74,17 @@ springdoc:
   show-actuator: true
   # Make sure all paths are documented
   paths-to-match: /**
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "prometheus"
+#      base-path: "/management"
+
+# OpenTelemetry configuration - disabled to prevent connection errors
+otel:
+  enabled: false
+  exporter:
+    otlp:
+      enabled: false
