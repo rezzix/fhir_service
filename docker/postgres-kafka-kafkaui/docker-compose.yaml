@@ -20,22 +20,25 @@ services:
     container_name: kafka
     ports:
       - "9092:9092"
-    #environment:
-      # Only 3 essential parameters for KRaft mode
-      #KAFKA_NODE_ID: 1
-      #KAFKA_PROCESS_ROLES: controller,broker
-      #KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-      #KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-	  #KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"  # <-- ADD THIS LINE
-    # The image has sensible defaults for other parameters
+    volumes:
+      - c:\docker\kafka\data:/tmp/kraft-combined-logs
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,INTERNAL://:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER  # 2. REQUIRED: Controller listener name
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: ghcr.io/kafbat/kafka-ui
     container_name: kafka-ui
     depends_on:
       - kafka
     ports:
-      - "8080:8080"
+      - "8101:8080"
     environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
